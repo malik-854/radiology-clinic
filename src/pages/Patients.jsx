@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
 import { useCollection, fsdb as db } from '../useDb';
 import { orderBy } from 'firebase/firestore';
-import { Plus, Search, X, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Search, X, Trash2, Edit2, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Patients = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   
   const allPatients = useCollection('patients', [orderBy('updated_at', 'desc')]);
   const patients = allPatients?.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.contact.includes(searchQuery));
 
   const handleAddPatient = async (e) => {
     e.preventDefault();
+    setIsSaving(true);
     const formData = new FormData(e.target);
     const patientData = {
       name: formData.get('name'),
@@ -23,14 +25,21 @@ const Patients = () => {
       updated_at: new Date().toISOString()
     };
     
-    if (editingPatient) {
-      await db.patients.update(editingPatient.id, patientData);
-    } else {
-      patientData.created_at = new Date().toISOString();
-      await db.patients.add(patientData);
+    try {
+      if (editingPatient) {
+        await db.patients.update(editingPatient.id, patientData);
+      } else {
+        patientData.created_at = new Date().toISOString();
+        await db.patients.add(patientData);
+      }
+      alert("Patient saved successfully!");
+      setShowModal(false);
+    } catch (error) {
+      console.error(error);
+      alert("Error saving patient.");
+    } finally {
+      setIsSaving(false);
     }
-    
-    setShowModal(false);
   };
 
   const openNew = () => {
@@ -149,8 +158,14 @@ const Patients = () => {
               </div>
               <div className="flex justify-end gap-2" style={{ marginTop: '2rem' }}>
                 <button type="button" className="btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
-                <button type="submit" className="btn-primary">
-                  {editingPatient ? 'Save Changes' : 'Save Patient'}
+                <button type="submit" className="btn-primary" disabled={isSaving}>
+                  {isSaving ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" /> Saving...
+                    </>
+                  ) : (
+                    editingPatient ? 'Save Changes' : 'Save Patient'
+                  )}
                 </button>
               </div>
             </form>

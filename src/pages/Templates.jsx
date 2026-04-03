@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { useCollection, fsdb as db } from '../useDb';
-import { Settings, Plus, Edit2, X, Save, Trash2 } from 'lucide-react';
+import { Settings, Plus, Edit2, X, Save, Trash2, Loader2 } from 'lucide-react';
 
 const Templates = () => {
   const templates = useCollection('templates', []);
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async (e) => {
     e.preventDefault();
+    setIsSaving(true);
     const formData = new FormData(e.target);
     const templateData = {
       title: formData.get('title'),
@@ -17,15 +19,23 @@ const Templates = () => {
       updated_at: new Date().toISOString()
     };
     
-    if (editingTemplate && editingTemplate.id) {
-      await db.templates.update(editingTemplate.id, templateData);
-    } else {
-      templateData.created_at = new Date().toISOString();
-      await db.templates.add(templateData);
+    try {
+      if (editingTemplate && editingTemplate.id) {
+        await db.templates.update(editingTemplate.id, templateData);
+      } else {
+        templateData.created_at = new Date().toISOString();
+        await db.templates.add(templateData);
+      }
+      
+      alert("Template saved successfully!");
+      setShowModal(false);
+      setEditingTemplate(null);
+    } catch (error) {
+      console.error(error);
+      alert("Error saving template.");
+    } finally {
+      setIsSaving(false);
     }
-    
-    setShowModal(false);
-    setEditingTemplate(null);
   };
 
   const openEdit = (template) => {
@@ -128,7 +138,9 @@ const Templates = () => {
               </div>
               <div className="flex justify-end gap-2" style={{ marginTop: '1rem' }}>
                 <button type="button" className="btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
-                <button type="submit" className="btn-primary"><Save size={18} /> Save Template</button>
+                <button type="submit" className="btn-primary" disabled={isSaving}>
+                  {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} Save Template
+                </button>
               </div>
             </form>
           </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Save, ArrowLeft, Plus } from 'lucide-react';
+import { Save, ArrowLeft, Plus, Loader2 } from 'lucide-react';
 import { useCollection, fsdb as db } from '../useDb';
 
 const NewInvoice = () => {
@@ -8,6 +8,7 @@ const NewInvoice = () => {
   const [searchParams] = useSearchParams();
   const initialPatientId = searchParams.get('patient');
   const editInvoiceId = searchParams.get('invoiceId');
+  const [isSaving, setIsSaving] = useState(false);
 
   const [patientId, setPatientId] = useState(initialPatientId || '');
   const [amount, setAmount] = useState('');
@@ -45,6 +46,7 @@ const NewInvoice = () => {
       return;
     }
 
+    setIsSaving(true);
     const invData = {
       patientId: patientId,
       amount: parseFloat(amount),
@@ -53,14 +55,22 @@ const NewInvoice = () => {
       updated_at: new Date().toISOString()
     };
 
-    if (editInvoiceId) {
-      await db.invoices.update(editInvoiceId, invData);
-    } else {
-      invData.created_at = new Date().toISOString();
-      await db.invoices.add(invData);
-    }
+    try {
+      if (editInvoiceId) {
+        await db.invoices.update(editInvoiceId, invData);
+      } else {
+        invData.created_at = new Date().toISOString();
+        await db.invoices.add(invData);
+      }
 
-    navigate('/invoices');
+      alert("Invoice saved successfully!");
+      navigate('/invoices');
+    } catch (error) {
+      console.error(error);
+      alert("Error saving invoice.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -156,8 +166,16 @@ const NewInvoice = () => {
 
           <div className="flex justify-end gap-4" style={{ marginTop: '1rem', flexWrap: 'wrap' }}>
             <button type="button" className="btn-ghost" onClick={() => navigate(-1)}>Cancel</button>
-            <button type="submit" className="btn-primary">
-              <Save size={18} /> Save Invoice
+            <button type="submit" className="btn-primary" disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" /> Saving...
+                </>
+              ) : (
+                <>
+                  <Save size={18} /> Save Invoice
+                </>
+              )}
             </button>
           </div>
 

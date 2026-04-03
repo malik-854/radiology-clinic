@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Save, ArrowLeft } from 'lucide-react';
+import { Save, ArrowLeft, Loader2 } from 'lucide-react';
 import { useCollection, fsdb as db } from '../useDb';
 
 const NewReport = () => {
@@ -8,6 +8,7 @@ const NewReport = () => {
   const [searchParams] = useSearchParams();
   const initialPatientId = searchParams.get('patient');
   const editReportId = searchParams.get('reportId');
+  const [isSaving, setIsSaving] = useState(false);
 
   const [patientId, setPatientId] = useState(initialPatientId || '');
   const [templateId, setTemplateId] = useState('');
@@ -46,6 +47,7 @@ const NewReport = () => {
       return;
     }
 
+    setIsSaving(true);
     const reportData = {
       patientId: patientId,
       templateId: templateId || null,
@@ -54,16 +56,24 @@ const NewReport = () => {
       updated_at: new Date().toISOString()
     };
 
-    let reportId;
-    if (editReportId) {
-      await db.reports.update(editReportId, reportData);
-      reportId = editReportId;
-    } else {
-      reportData.created_at = new Date().toISOString();
-      reportId = await db.reports.add(reportData);
-    }
+    try {
+      let reportId;
+      if (editReportId) {
+        await db.reports.update(editReportId, reportData);
+        reportId = editReportId;
+      } else {
+        reportData.created_at = new Date().toISOString();
+        reportId = await db.reports.add(reportData);
+      }
 
-    navigate(`/reports?id=${reportId}`);
+      alert("Report saved successfully!");
+      navigate(`/reports?id=${reportId}`);
+    } catch (error) {
+      console.error(error);
+      alert("Error saving report.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -140,11 +150,13 @@ const NewReport = () => {
               <button 
                 type="button" 
                 className="btn-accent" 
+                disabled={isSaving}
                 onClick={async () => {
                   if (!patientId) {
                     alert("Please select a patient.");
                     return;
                   }
+                  setIsSaving(true);
                   const reportData = {
                     patientId: patientId,
                     templateId: templateId || null,
@@ -153,15 +165,30 @@ const NewReport = () => {
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
                   };
-                  const newReportId = await db.reports.add(reportData);
-                  navigate(`/reports?id=${newReportId}`);
+                  try {
+                    const newReportId = await db.reports.add(reportData);
+                    alert("New report cloned and saved!");
+                    navigate(`/reports?id=${newReportId}`);
+                  } catch (e) {
+                     alert("Error cloning report.");
+                  } finally {
+                    setIsSaving(false);
+                  }
                 }}
               >
-                <Save size={18} /> Save as New
+                {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} Save as New
               </button>
             )}
-            <button type="submit" className="btn-primary">
-              <Save size={18} /> {editReportId ? 'Update Report' : 'Save & View Report'}
+            <button type="submit" className="btn-primary" disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" /> Saving...
+                </>
+              ) : (
+                <>
+                  <Save size={18} /> {editReportId ? 'Update Report' : 'Save & View Report'}
+                </>
+              )}
             </button>
           </div>
 
