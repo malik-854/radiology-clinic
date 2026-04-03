@@ -46,7 +46,7 @@ const NewInvoice = () => {
     }
 
     const invData = {
-      patientId: parseInt(patientId),
+      patientId: patientId,
       amount: parseFloat(amount),
       details,
       status,
@@ -54,7 +54,7 @@ const NewInvoice = () => {
     };
 
     if (editInvoiceId) {
-      await db.invoices.update(parseInt(editInvoiceId), invData);
+      await db.invoices.update(editInvoiceId, invData);
     } else {
       invData.created_at = new Date().toISOString();
       await db.invoices.add(invData);

@@ -7,7 +7,7 @@ import html2pdf from 'html2pdf.js';
 
 const PatientDetails = () => {
   const { id } = useParams();
-  const patientId = parseInt(id);
+  const patientId = id;
 
   const patient = useDocument('patients', patientId);
   const reports = useCollection('reports', [where('patientId', '==', patientId), orderBy('updated_at', 'desc')]);

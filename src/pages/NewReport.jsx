@@ -47,8 +47,8 @@ const NewReport = () => {
     }
 
     const reportData = {
-      patientId: parseInt(patientId),
-      templateId: templateId ? parseInt(templateId) : null,
+      patientId: patientId,
+      templateId: templateId || null,
       title,
       content,
       updated_at: new Date().toISOString()
@@ -56,7 +56,7 @@ const NewReport = () => {
 
     let reportId;
     if (editReportId) {
-      await db.reports.update(parseInt(editReportId), reportData);
+      await db.reports.update(editReportId, reportData);
       reportId = editReportId;
     } else {
       reportData.created_at = new Date().toISOString();
@@ -146,8 +146,8 @@ const NewReport = () => {
                     return;
                   }
                   const reportData = {
-                    patientId: parseInt(patientId),
-                    templateId: templateId ? parseInt(templateId) : null,
+                    patientId: patientId,
+                    templateId: templateId || null,
                     title,
                     content,
                     created_at: new Date().toISOString(),

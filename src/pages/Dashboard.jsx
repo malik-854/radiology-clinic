@@ -8,6 +8,35 @@ const Dashboard = () => {
   const patients = useCollection('patients', [orderBy('updated_at', 'desc')]);
   const reports = useCollection('reports', [orderBy('updated_at', 'desc')]);
   const invoices = useCollection('invoices', [orderBy('updated_at', 'desc')]);
+  const templates = useCollection('templates', []);
+
+  // One-time seeding of default templates to Firestore
+  React.useEffect(() => {
+    const seedTemplates = async () => {
+      if (templates && templates.length === 0) {
+        const defaultTemplates = [
+          {
+            title: 'Chest X-Ray (Normal)',
+            type: 'X-Ray',
+            content: `FINDINGS:\nLungs are clear without focal consolidation, effusion, or pneumothorax.\nCardiomediastinal silhouette is within normal limits.\nBony thorax is intact.\n\nIMPRESSION:\nNormal chest radiograph.`,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            title: 'Abdomen Ultrasound (Normal)',
+            type: 'Ultrasound',
+            content: `FINDINGS:\nLiver: Normal size and echotexture. No focal solid or cystic mass.\nGallbladder: Well distended, wall is not thickened. No gallstones or pericholecystic fluid seen.\nPancreas: Visualized portions are unremarkable.\nSpleen: Normal in size and uniform echotexture.\nKidneys: Both kidneys are normal in size and echotexture. No hydronephrosis or shadowing calculi.\n\nIMPRESSION:\nNormal ultrasound of the abdomen.`,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ];
+        for (const t of defaultTemplates) {
+          await db.templates.add(t);
+        }
+      }
+    };
+    seedTemplates();
+  }, [templates]);
 
   const patientCount = patients?.length || 0;
   const reportCount = reports?.length || 0;
