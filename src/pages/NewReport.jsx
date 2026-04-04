@@ -26,8 +26,8 @@ const NewReport = () => {
   const filteredPatients = React.useMemo(() => {
     if (!patients) return [];
     return patients.filter(p => 
-      p.name.toLowerCase().includes(patientSearch.toLowerCase()) || 
-      p.contact.includes(patientSearch)
+      (p.name || '').toLowerCase().includes(patientSearch.toLowerCase()) || 
+      (p.contact || '').includes(patientSearch)
     );
   }, [patients, patientSearch]);
 

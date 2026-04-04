@@ -11,7 +11,10 @@ const Patients = () => {
   const [isSaving, setIsSaving] = useState(false);
   
   const allPatients = useCollection('patients', [orderBy('updated_at', 'desc')]);
-  const patients = allPatients?.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.contact.includes(searchQuery));
+  const patients = allPatients?.filter(p => 
+    (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (p.contact || '').includes(searchQuery)
+  );
 
   const handleAddPatient = async (e) => {
     e.preventDefault();
