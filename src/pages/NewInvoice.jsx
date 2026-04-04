@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Save, ArrowLeft, Plus, Loader2 } from 'lucide-react';
 import { useCollection, fsdb as db } from '../useDb';
+import { orderBy } from 'firebase/firestore';
 
 const NewInvoice = () => {
   const navigate = useNavigate();
