@@ -1,10 +1,13 @@
-import React from 'react';
-import { useCollection } from '../useDb';
+import React, { useState, useMemo } from 'react';
+import { useCollection, fsdb as db } from '../useDb';
 import { orderBy, limit } from 'firebase/firestore';
-import { Users, FileText, FileSpreadsheet, Plus } from 'lucide-react';
+import { Users, FileText, FileSpreadsheet, Plus, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
   const patients = useCollection('patients', [orderBy('updated_at', 'desc')]);
   const reports = useCollection('reports', [orderBy('updated_at', 'desc')]);
   const invoices = useCollection('invoices', [orderBy('updated_at', 'desc')]);
@@ -42,7 +45,24 @@ const Dashboard = () => {
   const reportCount = reports?.length || 0;
   const recentPatients = patients ? patients.slice(0, 5) : [];
 
-  const totalRevenue = invoices?.reduce((acc, curr) => curr.status === 'Paid' ? acc + parseFloat(curr.amount) : acc, 0) || 0;
+  const totalRevenue = useMemo(() => {
+    if (!invoices) return 0;
+    let filtered = invoices.filter(inv => inv.status === 'Paid');
+    
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      filtered = filtered.filter(inv => new Date(inv.created_at) >= start);
+    }
+    
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(inv => new Date(inv.created_at) <= end);
+    }
+    
+    return filtered.reduce((acc, curr) => acc + parseFloat(curr.amount), 0);
+  }, [invoices, startDate, endDate]);
 
   return (
     <div className="animate-fade-in">
@@ -59,6 +79,36 @@ const Dashboard = () => {
             <FileText size={18} /> Create Report
           </Link>
         </div>
+      </div>
+
+      <div className="glass-panel" style={{ marginBottom: '2rem', display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: '200px' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>From Date</label>
+          <input 
+            type="date" 
+            value={startDate} 
+            onChange={(e) => setStartDate(e.target.value)}
+            style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid var(--panel-border)', background: 'rgba(15,23,42,0.6)', color: 'white', outline: 'none' }}
+          />
+        </div>
+        <div style={{ flex: 1, minWidth: '200px' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>To Date</label>
+          <input 
+            type="date" 
+            value={endDate} 
+            onChange={(e) => setEndDate(e.target.value)}
+            style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid var(--panel-border)', background: 'rgba(15,23,42,0.6)', color: 'white', outline: 'none' }}
+          />
+        </div>
+        {(startDate || endDate) && (
+          <button 
+            className="btn-ghost" 
+            onClick={() => { setStartDate(''); setEndDate(''); }}
+            style={{ padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}
+          >
+            <X size={18} /> Clear
+          </button>
+        )}
       </div>
 
       <div className="responsive-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
