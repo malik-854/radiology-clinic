@@ -3,6 +3,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Save, ArrowLeft, Loader2 } from 'lucide-react';
 import { useCollection, fsdb as db } from '../useDb';
 
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+
 const NewReport = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -11,12 +14,21 @@ const NewReport = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   const [patientId, setPatientId] = useState(initialPatientId || '');
+  const [patientSearch, setPatientSearch] = useState('');
   const [templateId, setTemplateId] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
 
-  const patients = useCollection('patients', []);
+  const patients = useCollection('patients', [orderBy('name', 'asc')]);
   const templates = useCollection('templates', []);
+
+  const filteredPatients = React.useMemo(() => {
+    if (!patients) return [];
+    return patients.filter(p => 
+      p.name.toLowerCase().includes(patientSearch.toLowerCase()) || 
+      p.contact.includes(patientSearch)
+    );
+  }, [patients, patientSearch]);
 
   useEffect(() => {
     if (editReportId) {
@@ -95,17 +107,26 @@ const NewReport = () => {
           
           <div className="responsive-grid responsive-grid-2" style={{ gap: '1.5rem' }}>
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <label>Select Patient</label>
-              <select 
-                value={patientId} 
-                onChange={e => setPatientId(e.target.value)}
-                required
-              >
-                <option value="">-- Select a Patient --</option>
-                {patients?.map(p => (
-                  <option key={p.id} value={p.id}>{p.name} ({p.contact})</option>
-                ))}
-              </select>
+              <label>Search & Select Patient</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <input 
+                  type="text" 
+                  placeholder="Type name or number to filter..." 
+                  value={patientSearch}
+                  onChange={e => setPatientSearch(e.target.value)}
+                  style={{ fontSize: '0.85rem', padding: '0.5rem' }}
+                />
+                <select 
+                  value={patientId} 
+                  onChange={e => setPatientId(e.target.value)}
+                  required
+                >
+                  <option value="">-- {filteredPatients?.length || 0} Patients Found --</option>
+                  {filteredPatients?.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} ({p.contact})</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="form-group" style={{ marginBottom: 0 }}>
@@ -135,13 +156,26 @@ const NewReport = () => {
 
           <div className="form-group" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', flex: 1 }}>
             <label>Findings and Impression</label>
-            <textarea 
-              required
-              value={content}
-              onChange={e => setContent(e.target.value)}
-              style={{ minHeight: '400px', resize: 'vertical', fontFamily: 'monospace', fontSize: '1rem' }}
-              placeholder="Type report here..."
-            />
+            <div className="quill-container" style={{ background: 'white', borderRadius: '8px', color: 'black' }}>
+              <ReactQuill 
+                theme="snow"
+                value={content}
+                onChange={setContent}
+                modules={{
+                  toolbar: [
+                    [{ 'header': [1, 2, false] }],
+                    [{ 'size': ['small', false, 'large', 'huge'] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    [{ 'align': [] }],
+                    ['clean']
+                  ]
+                }}
+                placeholder="Type report here..."
+                style={{ height: '400px' }}
+              />
+            </div>
+            <div style={{ height: '50px' }}></div> {/* Spacer for Quill toolbar bottom overlap */}
           </div>
 
           <div className="flex justify-end gap-4" style={{ marginTop: '1rem', flexWrap: 'wrap' }}>

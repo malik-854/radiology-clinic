@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { useCollection, fsdb as db } from '../useDb';
 import { Settings, Plus, Edit2, X, Save, Trash2, Loader2 } from 'lucide-react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const Templates = () => {
   const templates = useCollection('templates', []);
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [content, setContent] = useState('');
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -15,7 +18,7 @@ const Templates = () => {
     const templateData = {
       title: formData.get('title'),
       type: formData.get('type'),
-      content: formData.get('content'),
+      content: content,
       updated_at: new Date().toISOString()
     };
     
@@ -30,6 +33,7 @@ const Templates = () => {
       alert("Template saved successfully!");
       setShowModal(false);
       setEditingTemplate(null);
+      setContent('');
     } catch (error) {
       console.error(error);
       alert("Error saving template.");
@@ -40,11 +44,13 @@ const Templates = () => {
 
   const openEdit = (template) => {
     setEditingTemplate(template);
+    setContent(template.content || '');
     setShowModal(true);
   };
 
   const openNew = () => {
     setEditingTemplate(null);
+    setContent('');
     setShowModal(true);
   };
 
@@ -128,13 +134,26 @@ const Templates = () => {
               </div>
               <div className="form-group" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <label>Template Content</label>
-                <textarea 
-                  name="content" 
-                  defaultValue={editingTemplate?.content || ''} 
-                  required 
-                  style={{ flex: 1, minHeight: '300px', resize: 'vertical', fontFamily: 'monospace' }}
-                  placeholder="FINDINGS:..."
-                ></textarea>
+                <div style={{ background: 'white', borderRadius: '8px', color: 'black', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <ReactQuill 
+                    theme="snow"
+                    value={content}
+                    onChange={setContent}
+                    modules={{
+                      toolbar: [
+                        [{ 'header': [1, 2, false] }],
+                        [{ 'size': ['small', false, 'large', 'huge'] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        [{ 'align': [] }],
+                        ['clean']
+                      ]
+                    }}
+                    placeholder="FINDINGS:..."
+                    style={{ flex: 1, minHeight: '300px' }}
+                  />
+                </div>
+                <div style={{ height: '50px' }}></div>
               </div>
               <div className="flex justify-end gap-2" style={{ marginTop: '1rem' }}>
                 <button type="button" className="btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>

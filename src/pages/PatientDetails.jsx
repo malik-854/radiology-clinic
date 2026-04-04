@@ -26,15 +26,15 @@ const PatientDetails = () => {
         </div>
         <div style="text-align: right;">
           <p style="margin: 0;"><strong>Examination:</strong> ${report.title}</p>
-          <p style="margin: 5px 0 0 0;"><strong>Report ID:</strong> RAD-${report.id}00${report.patientId}</p>
+          <p style="margin: 5px 0 0 0;"><strong>Report ID:</strong> RAD-${report.id.substring(0, 8).toUpperCase()}</p>
         </div>
       </div>
-      <div style="min-height: 400px;">
-        <pre style="font-family: Arial, sans-serif; white-space: pre-wrap; font-size: 14px;">${report.content}</pre>
+      <div style="min-height: 400px; font-size: 16px;">
+        <div style="font-family: Arial, sans-serif;">${report.content}</div>
       </div>
       <div style="margin-top: 50px; text-align: right; border-top: 1px solid #ccc; padding-top: 20px;">
-        <p style="margin: 0;"><strong>Dr. Radiologist</strong></p>
-        <p style="margin: 0; font-size: 12px; color: #666;">Consultant Radiologist</p>
+        <p style="margin: 0;"><strong>Dr. Umme Habiba</strong></p>
+        <p style="margin: 0; font-size: 12px; color: #666;">MBBS; MD Radiology</p>
       </div>
     </div>
   `;
@@ -45,7 +45,7 @@ const PatientDetails = () => {
         <div></div>
         <div style="text-align: right;">
           <h1 style="margin: 0; color: #666;">INVOICE</h1>
-          <p style="margin: 5px 0 0 0;">INV-${inv.id}00${inv.patientId}</p>
+          <p style="margin: 5px 0 0 0;">INV-${inv.id.substring(0, 8).toUpperCase()}</p>
         </div>
       </div>
       <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
@@ -230,7 +230,7 @@ const PatientDetails = () => {
                     </span>
                   </div>
                   <pre style={{ fontFamily: 'var(--font-main)', fontSize: '0.9rem', whiteSpace: 'pre-wrap', color: 'var(--text-secondary)' }}>
-                    {report.content.substring(0, 100)}...
+                    {report.content.replace(/<[^>]*>/g, '').substring(0, 100)}...
                   </pre>
                   <div className="flex gap-4 items-center" style={{ marginTop: '0.5rem' }}>
                     <Link to={`/reports/new?reportId=${report.id}`} style={{ color: 'var(--text-primary)', fontSize: '0.9rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>

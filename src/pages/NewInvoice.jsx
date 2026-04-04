@@ -11,13 +11,22 @@ const NewInvoice = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   const [patientId, setPatientId] = useState(initialPatientId || '');
+  const [patientSearch, setPatientSearch] = useState('');
   const [amount, setAmount] = useState('');
   const [details, setDetails] = useState('');
   const [status, setStatus] = useState('Pending');
   const [newService, setNewService] = useState('');
 
-  const patients = useCollection('patients', []);
+  const patients = useCollection('patients', [orderBy('name', 'asc')]);
   const servicesList = useCollection('services', []);
+
+  const filteredPatients = React.useMemo(() => {
+    if (!patients) return [];
+    return patients.filter(p => 
+      p.name.toLowerCase().includes(patientSearch.toLowerCase()) || 
+      p.contact.includes(patientSearch)
+    );
+  }, [patients, patientSearch]);
 
   useEffect(() => {
     if (editInvoiceId) {
@@ -91,17 +100,26 @@ const NewInvoice = () => {
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label>Select Patient</label>
-            <select 
-              value={patientId} 
-              onChange={e => setPatientId(e.target.value)}
-              required
-            >
-              <option value="">-- Select a Patient --</option>
-              {patients?.map(p => (
-                <option key={p.id} value={p.id}>{p.name} ({p.contact})</option>
-              ))}
-            </select>
+            <label>Search & Select Patient</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <input 
+                type="text" 
+                placeholder="Type name or number to filter..." 
+                value={patientSearch}
+                onChange={e => setPatientSearch(e.target.value)}
+                style={{ fontSize: '0.85rem', padding: '0.5rem' }}
+              />
+              <select 
+                value={patientId} 
+                onChange={e => setPatientId(e.target.value)}
+                required
+              >
+                <option value="">-- {filteredPatients?.length || 0} Patients Found --</option>
+                {filteredPatients?.map(p => (
+                  <option key={p.id} value={p.id}>{p.name} ({p.contact})</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="form-group" style={{ marginBottom: 0 }}>

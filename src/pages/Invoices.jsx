@@ -46,7 +46,7 @@ const Invoices = () => {
         <div></div>
         <div style="text-align: right;">
           <h1 style="margin: 0; color: #666;">INVOICE</h1>
-          <p style="margin: 5px 0 0 0;">INV-${inv.id}00${inv.patientId}</p>
+          <p style="margin: 5px 0 0 0;">INV-${inv.id.substring(0, 8).toUpperCase()}</p>
         </div>
       </div>
       

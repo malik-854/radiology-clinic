@@ -50,17 +50,17 @@ const Reports = () => {
         </div>
         <div style="text-align: right;">
           <p style="margin: 0;"><strong>Examination:</strong> ${report.title}</p>
-          <p style="margin: 5px 0 0 0;"><strong>Report ID:</strong> RAD-${report.id}00${report.patientId}</p>
+          <p style="margin: 5px 0 0 0;"><strong>Report ID:</strong> RAD-${report.id.substring(0, 8).toUpperCase()}</p>
         </div>
       </div>
 
-      <div style="min-height: 400px;">
-        <pre style="font-family: Arial, sans-serif; white-space: pre-wrap; font-size: 14px;">${report.content}</pre>
+      <div style="min-height: 400px; font-size: 16px;">
+        <div style="font-family: Arial, sans-serif;">${report.content}</div>
       </div>
 
       <div style="margin-top: 50px; text-align: right; border-top: 1px solid #ccc; padding-top: 20px;">
         <p style="margin: 0;"><strong>Dr. Umme Habiba</strong></p>
-        <p style="margin: 0; font-size: 12px; color: #666;">Consultant Radiologist</p>
+        <p style="margin: 0; font-size: 12px; color: #666;">MBBS; MD Radiology</p>
       </div>
     </div>
   `;
@@ -165,7 +165,7 @@ const Reports = () => {
                 </p>
                 <div style={{ marginTop: '1rem', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '6px', maxHeight: '100px', overflow: 'hidden' }}>
                   <pre style={{ margin: 0, fontFamily: 'var(--font-main)', fontSize: '0.85rem', color: '#cbd5e1', whiteSpace: 'pre-wrap' }}>
-                    {report.content.substring(0, 150)}...
+                    {report.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
                   </pre>
                 </div>
               </div>
