@@ -4,8 +4,7 @@ import { Save, ArrowLeft, Loader2 } from 'lucide-react';
 import { useCollection, fsdb as db } from '../useDb';
 import { orderBy } from 'firebase/firestore';
 
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import RichEditor from '../components/RichEditor';
 
 const NewReport = () => {
   const navigate = useNavigate();
@@ -155,28 +154,13 @@ const NewReport = () => {
             />
           </div>
 
-          <div className="form-group" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', flex: 1 }}>
+          <div className="form-group" style={{ marginBottom: 0 }}>
             <label>Findings and Impression</label>
-            <div className="quill-container" style={{ background: 'white', borderRadius: '8px', color: 'black' }}>
-              <ReactQuill 
-                theme="snow"
-                value={content}
-                onChange={setContent}
-                modules={{
-                  toolbar: [
-                    [{ 'header': [1, 2, false] }],
-                    [{ 'size': ['small', false, 'large', 'huge'] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                    [{ 'align': [] }],
-                    ['clean']
-                  ]
-                }}
-                placeholder="Type report here..."
-                style={{ height: '400px' }}
-              />
-            </div>
-            <div style={{ height: '50px' }}></div> {/* Spacer for Quill toolbar bottom overlap */}
+            <RichEditor
+              value={content}
+              onChange={setContent}
+              placeholder="Type report findings here..."
+            />
           </div>
 
           <div className="flex justify-end gap-4" style={{ marginTop: '1rem', flexWrap: 'wrap' }}>
