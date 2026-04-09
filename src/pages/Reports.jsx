@@ -38,9 +38,9 @@ const Reports = () => {
   };
 
   const getReportHtml = (report) => `
-    <div style="font-family: Arial, sans-serif; padding: 10px 40px 40px 40px; color: black; line-height: 1.6;">
-      <div style="height: 20px; margin-bottom: 10px;">
-        <!-- Space for pre-printed letterhead -->
+    <div style="font-family: Arial, sans-serif; padding: 0 40px 40px 40px; color: black; line-height: 1.6;">
+      <div style="height: 0px; margin-bottom: 0px;">
+        <!-- Space for pre-printed letterhead managed by global margin -->
       </div>
       
       <div style="display: flex; justify-content: space-between; margin-bottom: 30px; background: #f3f4f6; padding: 15px; border-radius: 8px;">
@@ -69,9 +69,8 @@ const Reports = () => {
     const element = document.createElement('div');
     element.innerHTML = getReportHtml(report);
 
-    const filename = `Report_${report.patientName.replace(/ /g, '_')}.pdf`;
     const opt = {
-      margin: 0.5,
+      margin: [1.3, 0.5, 0.5, 0.5],
       filename: filename,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2 },
@@ -99,7 +98,7 @@ const Reports = () => {
   const handleView = (report) => {
     const element = document.createElement('div');
     element.innerHTML = getReportHtml(report);
-    const opt = { margin: 0.5, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
+    const opt = { margin: [1.3, 0.5, 0.5, 0.5], image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
     html2pdf().set(opt).from(element).toPdf().get('pdf').then(pdf => {
       const dataUri = pdf.output('datauristring');
       const newWindow = window.open();
@@ -192,7 +191,7 @@ const Reports = () => {
                     element.innerHTML = printContent;
 
                     const opt = {
-                      margin: 0.5,
+                      margin: [1.3, 0.5, 0.5, 0.5],
                       filename: `Report_${report.patientName.replace(/ /g, '_')}.pdf`,
                       image: { type: 'jpeg', quality: 0.98 },
                       html2canvas: { scale: 2 },
