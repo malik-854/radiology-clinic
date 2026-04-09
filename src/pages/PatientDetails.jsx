@@ -14,8 +14,8 @@ const PatientDetails = () => {
   const invoices = useCollection('invoices', [where('patientId', '==', patientId), orderBy('updated_at', 'desc')]);
 
   const getReportHtml = (report) => `
-    <div style="font-family: Arial, sans-serif; padding: 40px; color: black; line-height: 1.6;">
-      <div style="height: 100px; margin-bottom: 30px;">
+    <div style="font-family: Arial, sans-serif; padding: 10px 40px 40px 40px; color: black; line-height: 1.6;">
+      <div style="height: 20px; margin-bottom: 10px;">
         <!-- Space for pre-printed letterhead -->
       </div>
       
