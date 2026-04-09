@@ -144,7 +144,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       <div style="min-height: 400px; font-size: 16px;">
         <div style="font-family: Arial, sans-serif;">${e.content}</div>
       </div>
-      <div style="margin-top: 50px; text-align: right; border-top: 1px solid #ccc; padding-top: 20px;">
+      <div style="margin-top: 50px; text-align: right; padding-top: 20px;">
         <p style="margin: 0;"><strong>Dr. Umme Habiba</strong></p>
         <p style="margin: 0; font-size: 12px; color: #666;">MBBS; MD Radiology</p>
       </div>
@@ -219,7 +219,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         <div style="font-family: Arial, sans-serif;">${e.content}</div>
       </div>
 
-      <div style="margin-top: 50px; text-align: right; border-top: 1px solid #ccc; padding-top: 20px;">
+      <div style="margin-top: 50px; text-align: right; padding-top: 20px;">
         <p style="margin: 0;"><strong>Dr. Umme Habiba</strong></p>
         <p style="margin: 0; font-size: 12px; color: #666;">MBBS; MD Radiology</p>
       </div>
