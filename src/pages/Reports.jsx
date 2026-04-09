@@ -58,7 +58,7 @@ const Reports = () => {
         <div style="font-family: Arial, sans-serif;">${report.content}</div>
       </div>
 
-      <div style="margin-top: 50px; text-align: right; border-top: 1px solid #ccc; padding-top: 20px;">
+      <div style="margin-top: 50px; text-align: right; padding-top: 20px;">
         <p style="margin: 0;"><strong>Dr. Umme Habiba</strong></p>
         <p style="margin: 0; font-size: 12px; color: #666;">MBBS; MD Radiology</p>
       </div>
