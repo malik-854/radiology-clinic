@@ -77,9 +77,8 @@ const RichEditor = ({ value, onChange, placeholder = 'Type here...' }) => {
     }
 
     setIsAiProcessing(true);
-
-    const callApi = async (modelName, apiVersion = 'v1') => {
-      const resp = await fetch(`https://generativelanguage.googleapis.com/${apiVersion}/models/${modelName}:generateContent`, {
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -104,45 +103,19 @@ ${currentText}`
           }]
         })
       });
-      return resp;
-    };
-
-    try {
-      // Attempt 1: Primary Stable Model on v1
-      let response = await callApi('gemini-1.5-flash', 'v1');
-      
-      // Fallback 1: If 404 (Not Found) or 503 (Busy), try the lighter 8B sub-model
-      if (response.status === 404 || response.status === 503) {
-        console.warn(`Model busy or not found on v1, trying fallback to 1.5-flash-8b...`);
-        response = await callApi('gemini-1.5-flash-8b', 'v1');
-      }
-
-      // Fallback 2: If still failing, try the v1beta endpoint with the "latest" alias
-      if (!response.ok && (response.status === 404 || response.status === 503)) {
-        console.warn(`v1 failed, trying v1beta with alias...`);
-        response = await callApi('gemini-1.5-flash-latest', 'v1beta');
-      }
 
       const data = await response.json();
       
       if (!response.ok) {
+        // Detailed error for debugging
         const errorMsg = data.error?.message || response.statusText || "Unknown Error";
         const errorCode = data.error?.status || response.status;
-        
-        if (errorCode === "UNAVAILABLE" || response.status === 503) {
-          throw new Error("The AI service is temporarily overloaded by Google's servers. Please wait 10 seconds and try again.");
-        }
-        
-        if (errorCode === "NOT_FOUND" || response.status === 404) {
-          throw new Error("Model configuration error. Please check if your API key supports the Gemini 1.5 models.");
-        }
-        
         throw new Error(`${errorCode}: ${errorMsg}`);
       }
 
       const aiHtml = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (aiHtml) {
-        let cleanedHtml = aiHtml.replace(/```html|```/g, '').trim();
+        const cleanedHtml = aiHtml.replace(/```html|```/g, '').trim();
         
         // Final scrub to ensure the AI didn't sneak in any colors/styles
         const temp = document.createElement('div');
@@ -160,15 +133,10 @@ ${currentText}`
       }
     } catch (error) {
       console.error("AI Error Detailed:", error);
-      
-      if (error.message.includes("403") || error.message.includes("PERMISSION_DENIED")) {
-        alert("API Key Error: Your API key might be invalid or expired. Check your Google AI Studio dashboard.");
-      } else {
-        alert(`AI Error: ${error.message}`);
-      }
+      alert(`AI Error: ${error.message}`);
       
       if (error.message.includes("400") || error.message.includes("INVALID_ARGUMENT")) {
-        alert("Tip: Check if your API key supports Gemini 1.5.");
+        alert("Tip: Check if your API key is definitely for Gemini 1.5.");
       }
     } finally {
       setIsAiProcessing(false);
