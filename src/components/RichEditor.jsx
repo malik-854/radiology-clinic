@@ -77,8 +77,9 @@ const RichEditor = ({ value, onChange, placeholder = 'Type here...' }) => {
     }
 
     setIsAiProcessing(true);
-    try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent`, {
+
+    const callApi = async (modelName) => {
+      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -103,19 +104,36 @@ ${currentText}`
           }]
         })
       });
+      return resp;
+    };
+
+    try {
+      // Attempt 1: Standard Flash model
+      let response = await callApi('gemini-1.5-flash');
+      
+      // Handle "Unavailable / High Demand" (503)
+      if (response.status === 503) {
+        console.warn("Gemini 1.5 Flash is busy, switching to 1.5 Flash-8B...");
+        // Fast fallback to the lighter 8B model which usually has more capacity
+        response = await callApi('gemini-1.5-flash-8b');
+      }
 
       const data = await response.json();
       
       if (!response.ok) {
-        // Detailed error for debugging
         const errorMsg = data.error?.message || response.statusText || "Unknown Error";
         const errorCode = data.error?.status || response.status;
+        
+        if (errorCode === "UNAVAILABLE" || response.status === 503) {
+          throw new Error("The AI service is temporarily overloaded by Google's servers. Please wait 10 seconds and try again.");
+        }
+        
         throw new Error(`${errorCode}: ${errorMsg}`);
       }
 
       const aiHtml = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (aiHtml) {
-        const cleanedHtml = aiHtml.replace(/```html|```/g, '').trim();
+        let cleanedHtml = aiHtml.replace(/```html|```/g, '').trim();
         
         // Final scrub to ensure the AI didn't sneak in any colors/styles
         const temp = document.createElement('div');
@@ -133,10 +151,15 @@ ${currentText}`
       }
     } catch (error) {
       console.error("AI Error Detailed:", error);
-      alert(`AI Error: ${error.message}`);
+      
+      if (error.message.includes("403") || error.message.includes("PERMISSION_DENIED")) {
+        alert("API Key Error: Your API key might be invalid or expired. Check your Google AI Studio dashboard.");
+      } else {
+        alert(`AI Error: ${error.message}`);
+      }
       
       if (error.message.includes("400") || error.message.includes("INVALID_ARGUMENT")) {
-        alert("Tip: Check if your API key is definitely for Gemini 1.5.");
+        alert("Tip: Check if your API key supports Gemini 1.5.");
       }
     } finally {
       setIsAiProcessing(false);
