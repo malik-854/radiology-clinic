@@ -78,8 +78,8 @@ const RichEditor = ({ value, onChange, placeholder = 'Type here...' }) => {
 
     setIsAiProcessing(true);
 
-    const callApi = async (modelName) => {
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`, {
+    const callApi = async (modelName, apiVersion = 'v1') => {
+      const resp = await fetch(`https://generativelanguage.googleapis.com/${apiVersion}/models/${modelName}:generateContent`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -108,14 +108,19 @@ ${currentText}`
     };
 
     try {
-      // Attempt 1: Standard Flash model
-      let response = await callApi('gemini-1.5-flash');
+      // Attempt 1: Primary Stable Model on v1
+      let response = await callApi('gemini-1.5-flash', 'v1');
       
-      // Handle "Unavailable / High Demand" (503)
-      if (response.status === 503) {
-        console.warn("Gemini 1.5 Flash is busy, switching to 1.5 Flash-8B...");
-        // Fast fallback to the lighter 8B model which usually has more capacity
-        response = await callApi('gemini-1.5-flash-8b');
+      // Fallback 1: If 404 (Not Found) or 503 (Busy), try the lighter 8B sub-model
+      if (response.status === 404 || response.status === 503) {
+        console.warn(`Model busy or not found on v1, trying fallback to 1.5-flash-8b...`);
+        response = await callApi('gemini-1.5-flash-8b', 'v1');
+      }
+
+      // Fallback 2: If still failing, try the v1beta endpoint with the "latest" alias
+      if (!response.ok && (response.status === 404 || response.status === 503)) {
+        console.warn(`v1 failed, trying v1beta with alias...`);
+        response = await callApi('gemini-1.5-flash-latest', 'v1beta');
       }
 
       const data = await response.json();
@@ -126,6 +131,10 @@ ${currentText}`
         
         if (errorCode === "UNAVAILABLE" || response.status === 503) {
           throw new Error("The AI service is temporarily overloaded by Google's servers. Please wait 10 seconds and try again.");
+        }
+        
+        if (errorCode === "NOT_FOUND" || response.status === 404) {
+          throw new Error("Model configuration error. Please check if your API key supports the Gemini 1.5 models.");
         }
         
         throw new Error(`${errorCode}: ${errorMsg}`);
