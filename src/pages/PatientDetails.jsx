@@ -92,12 +92,16 @@ const PatientDetails = () => {
     
     html2pdf().set(opt).from(element).toPdf().get('pdf').then(pdf => {
       const file = new File([pdf.output('blob')], filename, { type: 'application/pdf' });
+      const phone = patient?.contact ? patient.contact.replace(/\D/g, '') : '';
+      const text = encodeURIComponent(`Please find the attached radiology document for ${patient?.name}.`);
+      const whatsappUrl = `https://wa.me/${phone}?text=${text}`;
+
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         navigator.share({ files: [file], title: filename, text: `Report for ${patient?.name}` }).catch(console.error);
       } else {
         pdf.save(filename);
         alert("Since you are on a computer, websites cannot automatically attach files to WhatsApp. The PDF has been downloaded. Press OK to open WhatsApp, then manually attach the file.");
-        window.open(`https://wa.me/?text=Please%20find%20the%20attached%20radiology%20document%20for%20${encodeURIComponent(patient?.name)}.`, '_blank');
+        window.open(whatsappUrl, '_blank');
       }
     });
   };
@@ -136,12 +140,16 @@ const PatientDetails = () => {
     
     html2pdf().set(opt).from(element).toPdf().get('pdf').then(pdf => {
       const file = new File([pdf.output('blob')], filename, { type: 'application/pdf' });
+      const phone = patient?.contact ? patient.contact.replace(/\D/g, '') : '';
+      const text = encodeURIComponent(`Please find the attached radiology invoice for ${patient?.name}.`);
+      const whatsappUrl = `https://wa.me/${phone}?text=${text}`;
+
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         navigator.share({ files: [file], title: filename, text: `Invoice for ${patient?.name}` }).catch(console.error);
       } else {
         pdf.save(filename);
         alert("Since you are on a computer, websites cannot automatically attach files to WhatsApp. The PDF has been downloaded. Press OK to open WhatsApp, then manually attach the file.");
-        window.open(`https://wa.me/?text=Please%20find%20the%20attached%20radiology%20invoice%20for%20${encodeURIComponent(patient?.name)}.`, '_blank');
+        window.open(whatsappUrl, '_blank');
       }
     });
   };

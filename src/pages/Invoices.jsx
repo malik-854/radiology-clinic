@@ -16,7 +16,11 @@ const Invoices = () => {
     
     const enriched = allInvoices.map(inv => {
       const p = allPatients.find(patient => patient.id.toString() === inv.patientId?.toString());
-      return { ...inv, patientName: p ? p.name : 'Unknown Patient' };
+      return { 
+        ...inv, 
+        patientName: p ? p.name : 'Unknown Patient',
+        patientContact: p ? p.contact : ''
+      };
     });
     
     if (searchQuery) {
@@ -98,6 +102,9 @@ const Invoices = () => {
     html2pdf().set(opt).from(element).toPdf().get('pdf').then(pdf => {
       const blob = pdf.output('blob');
       const file = new File([blob], filename, { type: 'application/pdf' });
+      const phone = inv.patientContact ? inv.patientContact.replace(/\D/g, '') : '';
+      const text = encodeURIComponent(`Please find the attached radiology invoice for ${inv.patientName}.`);
+      const whatsappUrl = `https://wa.me/${phone}?text=${text}`;
       
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         navigator.share({
@@ -108,7 +115,7 @@ const Invoices = () => {
       } else {
         pdf.save(filename);
         alert("Since you are on a computer, websites cannot automatically attach files to WhatsApp. The PDF has been downloaded. Press OK to open WhatsApp, then manually attach the file.");
-        window.open(`https://wa.me/?text=Please%20find%20the%20attached%20radiology%20invoice%20for%20${encodeURIComponent(inv.patientName)}.`, '_blank');
+        window.open(whatsappUrl, '_blank');
       }
     });
   };

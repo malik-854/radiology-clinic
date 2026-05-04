@@ -19,7 +19,11 @@ const Reports = () => {
 
     const enriched = allReports.map(r => {
       const p = allPatients.find(patient => patient.id.toString() === r.patientId?.toString());
-      return { ...r, patientName: p ? p.name : 'Unknown Patient' };
+      return { 
+        ...r, 
+        patientName: p ? p.name : 'Unknown Patient',
+        patientContact: p ? p.contact : ''
+      };
     });
 
     if (!searchQuery) return enriched;
@@ -69,6 +73,7 @@ const Reports = () => {
     const element = document.createElement('div');
     element.innerHTML = getReportHtml(report);
 
+    const filename = `Report_${report.patientName.replace(/ /g, '_')}.pdf`;
     const opt = {
       margin: [1.3, 0.5, 0.5, 0.5],
       filename: filename,
@@ -80,6 +85,9 @@ const Reports = () => {
     html2pdf().set(opt).from(element).toPdf().get('pdf').then(pdf => {
       const blob = pdf.output('blob');
       const file = new File([blob], filename, { type: 'application/pdf' });
+      const phone = report.patientContact ? report.patientContact.replace(/\D/g, '') : '';
+      const text = encodeURIComponent(`Please find the attached radiology document for ${report.patientName}.`);
+      const whatsappUrl = `https://wa.me/${phone}?text=${text}`;
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         navigator.share({
@@ -90,7 +98,7 @@ const Reports = () => {
       } else {
         pdf.save(filename);
         alert("Since you are on a computer, websites cannot automatically attach files to WhatsApp. The PDF has been downloaded. Press OK to open WhatsApp, then manually attach the file.");
-        window.open(`https://wa.me/?text=Please%20find%20the%20attached%20radiology%20document%20for%20${encodeURIComponent(report.patientName)}.`, '_blank');
+        window.open(whatsappUrl, '_blank');
       }
     });
   };
